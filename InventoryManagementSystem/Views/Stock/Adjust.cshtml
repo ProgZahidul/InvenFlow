@@ -1,0 +1,57 @@
+﻿@model StockAdjustmentViewModel
+@{
+    ViewData["Title"] = "Adjust Stock";
+}
+
+<h2><i class="fas fa-adjust"></i> @ViewData["Title"]</h2>
+<hr />
+
+<div class="alert alert-info">
+    <strong>Item:</strong> @Model.ItemName<br />
+    <strong>Batch:</strong> @Model.BatchNumber<br />
+    <strong>Current Quantity:</strong> @Model.CurrentQuantity
+</div>
+
+<form asp-action="Adjust" method="post">
+    <input type="hidden" asp-for="StockId" />
+    <input type="hidden" asp-for="ItemName" />
+    <input type="hidden" asp-for="BatchNumber" />
+    <input type="hidden" asp-for="CurrentQuantity" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="AdjustmentQuantity" class="control-label"></label>
+                <input asp-for="AdjustmentQuantity" class="form-control" />
+                <span asp-validation-for="AdjustmentQuantity" class="text-danger"></span>
+                <small class="form-text text-muted">
+                    Positive number to add stock, negative number to remove stock.
+                    New quantity will be: @Model.CurrentQuantity + @Html.DisplayNameFor(m => m.AdjustmentQuantity)
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="Reason" class="control-label"></label>
+                <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Reason" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save Adjustment
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

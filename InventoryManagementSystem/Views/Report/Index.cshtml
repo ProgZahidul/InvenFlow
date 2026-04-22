@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <h2><i class="fas fa-chart-bar"></i> @ViewData["Title"]</h2>
+        <hr />
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="card text-center h-100 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Stock Report</h5>
+                    <p class="card-text">Current inventory levels and stock status</p>
+                </div>
+                <a asp-action="StockReport" class="btn btn-primary mt-2">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="card text-center h-100 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fas fa-calendar-times fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">Expiry Report</h5>
+                    <p class="card-text">Items approaching expiration dates</p>
+                </div>
+                <a asp-action="ExpiryReport" class="btn btn-warning mt-2">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="card text-center h-100 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fas fa-exchange-alt fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Transaction Report</h5>
+                    <p class="card-text">All receipts and issues within a date range</p>
+                </div>
+                <a asp-action="TransactionReport" class="btn btn-info mt-2">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="card text-center h-100 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fas fa-clipboard-list fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Requisition Report</h5>
+                    <p class="card-text">Purchase requisitions and their status</p>
+                </div>
+                <a asp-action="RequisitionReport" class="btn btn-success mt-2">View Report</a>
+            </div>
+        </div>
+    </div>
+</div>

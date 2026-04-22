@@ -1,0 +1,224 @@
+﻿@model IssueViewModel
+@{
+    ViewData["Title"] = "Issue Items";
+}
+
+<h2><i class="fas fa-share-square"></i> @ViewData["Title"]</h2>
+<hr />
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="DepartmentId" class="control-label"></label>
+                <select asp-for="DepartmentId" class="form-control" asp-items="ViewBag.Departments">
+                    <option value="">-- Select Department --</option>
+                </select>
+                <span asp-validation-for="DepartmentId" class="text-danger"></span>
+            </div>
+        </div>
+        @* <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="RequestedById" class="control-label"></label>
+                <input asp-for="RequestedById" class="form-control" />
+                <span asp-validation-for="RequestedById" class="text-danger"></span>
+            </div>
+        </div> *@
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="IssueDate" class="control-label"></label>
+                <input asp-for="IssueDate" class="form-control" />
+                <span asp-validation-for="IssueDate" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label asp-for="Notes" class="control-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <h4>Items to Issue</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered" id="itemsTable">
+            <thead class="thead-light">
+                <tr>
+                    <th>Item</th>
+                    <th>Batch</th>
+                    <th>Available</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <select asp-for="Items[i].ItemId" class="form-control item-select" asp-items="ViewBag.Items">
+                                <option value="">-- Select Item --</option>
+                            </select>
+                            <span asp-validation-for="Items[i].ItemId" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <select asp-for="Items[i].StockId" class="form-control stock-select">
+                                <option value="">-- Select Batch --</option>
+                            </select>
+                            <span asp-validation-for="Items[i].StockId" class="text-danger"></span>
+                        </td>
+                        <td class="available-quantity">-</td>
+                        <td>
+                            <input asp-for="Items[i].Quantity" class="form-control" min="1" />
+                            <span asp-validation-for="Items[i].Quantity" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-item">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button type="button" id="addItem" class="btn btn-secondary mb-3">
+        <i class="fas fa-plus"></i> Add Item
+    </button>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Issue Items
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+                $(document).ready(function () {
+            // Form submission validation
+            $('form').on('submit', function (e) {
+                var isValid = true;
+                var errorMessage = '';
+
+                // Check if department is selected
+                if (!$('#DepartmentId').val()) {
+                    isValid = false;
+                    errorMessage = 'Please select a department.\n';
+                }
+
+                // Check if at least one item is added with valid quantity
+                var hasValidItems = false;
+                $('.item-select').each(function () {
+                    var itemId = $(this).val();
+                    var stockId = $(this).closest('tr').find('.stock-select').val();
+                    var quantity = $(this).closest('tr').find('input[type="number"]').val();
+
+                    if (itemId && stockId && quantity > 0) {
+                        hasValidItems = true;
+                    }
+                });
+
+                if (!hasValidItems) {
+                    isValid = false;
+                    errorMessage += 'Please add at least one valid item with quantity.\n';
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fix the following errors:\n' + errorMessage);
+                    return false;
+                }
+
+                // Show loading indicator
+                $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            });
+        });
+        $(document).ready(function () {
+            // Add new item row
+            $("#addItem").click(function () {
+                var index = $("#itemsTable tbody tr").length;
+                var row = `
+                    <tr>
+                        <td>
+                            <select name="Items[${index}].ItemId" class="form-control item-select">
+                                @foreach (var item in ViewBag.Items as SelectList)
+                                {
+                                        <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <select name="Items[${index}].StockId" class="form-control stock-select">
+                                <option value="">-- Select Batch --</option>
+                            </select>
+                        </td>
+                        <td class="available-quantity">-</td>
+                        <td>
+                            <input name="Items[${index}].Quantity" class="form-control" min="1" type="number" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-item">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>`;
+                $("#itemsTable tbody").append(row);
+            });
+
+            // Remove item row
+            $(document).on("click", ".remove-item", function () {
+                $(this).closest("tr").remove();
+            });
+
+            // Load batches when item is selected
+            $(document).on("change", ".item-select", function () {
+                var itemId = $(this).val();
+                var stockSelect = $(this).closest("tr").find(".stock-select");
+                var availableCell = $(this).closest("tr").find(".available-quantity");
+
+                if (itemId) {
+                    $.getJSON('/Issue/GetStocksForItem?itemId=' + itemId, function (data) {
+                        stockSelect.empty().append('<option value="">-- Select Batch --</option>');
+                        availableCell.text('-');
+
+                        $.each(data, function (index, item) {
+                            stockSelect.append($('<option>', {
+                                value: item.id,
+                                text: item.batchInfo
+                            }));
+                        });
+                    });
+                } else {
+                    stockSelect.empty().append('<option value="">-- Select Batch --</option>');
+                    availableCell.text('-');
+                }
+            });
+
+            // Show available quantity when batch is selected
+            $(document).on("change", ".stock-select", function () {
+                var selectedText = $(this).find('option:selected').text();
+                var availableCell = $(this).closest("tr").find(".available-quantity");
+
+                // Extract available quantity from the batch info text
+                var match = selectedText.match(/Available: (\d+)/);
+                if (match && match[1]) {
+                    availableCell.text(match[1]);
+                } else {
+                    availableCell.text('-');
+                }
+            });
+        });
+    </script>
+}

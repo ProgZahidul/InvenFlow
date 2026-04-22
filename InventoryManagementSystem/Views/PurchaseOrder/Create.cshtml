@@ -1,0 +1,114 @@
+﻿@model PurchaseOrderViewModel
+@{
+    ViewData["Title"] = "Create Purchase Order";
+}
+
+<h2><i class="fas fa-file-invoice-dollar"></i> @ViewData["Title"]</h2>
+<hr />
+
+<div class="alert alert-info">
+    <strong>Requisition:</strong> @Model.RequisitionNumber
+</div>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="RequisitionId" />
+    <input type="hidden" asp-for="RequisitionNumber" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="SupplierId" class="control-label"></label>
+                <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.Suppliers">
+                    <option value="">-- Select Supplier --</option>
+                </select>
+                <span asp-validation-for="SupplierId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="ExpectedDeliveryDate" class="control-label"></label>
+                <input asp-for="ExpectedDeliveryDate" class="form-control" />
+                <span asp-validation-for="ExpectedDeliveryDate" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <h4>Items</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Model.Items[i].ItemName
+                            <input type="hidden" asp-for="Items[i].ItemId" />
+                            <input type="hidden" asp-for="Items[i].ItemName" />
+                        </td>
+                        <td>
+                            @Model.Items[i].QuantityOrdered
+                            <input type="hidden" asp-for="Items[i].QuantityOrdered" />
+                        </td>
+                        <td>
+                            <input asp-for="Items[i].UnitPrice" class="form-control" />
+                            <span asp-validation-for="Items[i].UnitPrice" class="text-danger"></span>
+                        </td>
+                        <td>
+                            @((Model.Items[i].QuantityOrdered * Model.Items[i].UnitPrice).ToString("C"))
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-info">
+                    <td colspan="3" class="text-right"><strong>Grand Total:</strong></td>
+                    <td><strong>@Model.Items.Sum(i => i.QuantityOrdered * i.UnitPrice).ToString("C")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Create Purchase Order
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            // Calculate totals when unit prices change
+            $('input[name$="UnitPrice"]').on('input', function() {
+                calculateTotals();
+            });
+
+            function calculateTotals() {
+                var grandTotal = 0;
+
+                $('tbody tr').each(function() {
+                    var quantity = parseInt($(this).find('td:eq(1)').text().trim());
+                    var unitPrice = parseFloat($(this).find('input[name$="UnitPrice"]').val()) || 0;
+                    var total = quantity * unitPrice;
+
+                    $(this).find('td:eq(3)').text('$' + total.toFixed(2));
+                    grandTotal += total;
+                });
+
+                $('tfoot td:last').text('$' + grandTotal.toFixed(2));
+            }
+        });
+    </script>
+}

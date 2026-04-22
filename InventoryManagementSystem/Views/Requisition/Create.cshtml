@@ -1,0 +1,136 @@
+﻿@model RequisitionViewModel
+@{
+    ViewData["Title"] = "Create Purchase Requisition";
+}
+
+<h2><i class="fas fa-plus-circle"></i> @ViewData["Title"]</h2>
+<hr />
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <h4>Items</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered" id="itemsTable">
+            <thead class="thead-light">
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <select asp-for="Items[i].ItemId" class="form-control" asp-items="ViewBag.Items">
+                                <option value="">-- Select Item --</option>
+                            </select>
+                            <span asp-validation-for="Items[i].ItemId" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <input asp-for="Items[i].Quantity" class="form-control" min="1" />
+                            <span asp-validation-for="Items[i].Quantity" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <input asp-for="Items[i].Notes" class="form-control" />
+                            <span asp-validation-for="Items[i].Notes" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-item">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button type="button" id="addItem" class="btn btn-secondary mb-3">
+        <i class="fas fa-plus"></i> Add Item
+    </button>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Create Requisition
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $("#addItem").click(function () {
+                var index = $("#itemsTable tbody tr").length;
+                var row = `
+                    <tr>
+                        <td>
+                            <select name="Items[${index}].ItemId" class="form-control">
+                                @foreach (var item in ViewBag.Items as SelectList)
+                                {
+                                        <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <input name="Items[${index}].Quantity" class="form-control" min="1" type="number" />
+                        </td>
+                        <td>
+                            <input name="Items[${index}].Notes" class="form-control" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-item">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>`;
+                $("#itemsTable tbody").append(row);
+            });
+
+            $(document).on("click", ".remove-item", function () {
+                $(this).closest("tr").remove();
+            });
+        });
+    </script>
+}

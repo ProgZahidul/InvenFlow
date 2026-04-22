@@ -1,0 +1,183 @@
+﻿@model IEnumerable<InventoryManagementSystem.Models.Supplier>
+
+@{
+    ViewData["Title"] = "Suppliers Management";
+    var currentStatus = ViewBag.CurrentStatus as string ?? "active";
+    var returnUrl = Context.Request.QueryString.HasValue ? Context.Request.QueryString.Value : "";
+}
+
+<!-- Alerts -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Suppliers Management</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Create New
+    </a>
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Filter Suppliers</h5>
+    </div>
+    <div class="card-body">
+        <div class="btn-group flex-wrap" role="group">
+            <a asp-action="Index" asp-route-status="active"
+               class="btn @(currentStatus == "active" ? "btn-primary" : "btn-outline-primary")">
+                <i class="fas fa-check-circle"></i> Active
+            </a>
+            <a asp-action="Index" asp-route-status="inactive"
+               class="btn @(currentStatus == "inactive" ? "btn-warning" : "btn-outline-warning")">
+                <i class="fas fa-ban"></i> Inactive
+            </a>
+            <a asp-action="Index" asp-route-status="all"
+               class="btn @(currentStatus == "all" ? "btn-info" : "btn-outline-info")">
+                <i class="fas fa-list"></i> All Suppliers
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Suppliers Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-truck"></i> Suppliers List
+            <span class="badge bg-secondary ms-2">@Model.Count()</span>
+        </h5>
+        <div>
+            <span class="badge bg-success">Active: @Model.Count(s => s.IsActive)</span>
+            <span class="badge bg-warning ms-2">Inactive: @Model.Count(s => !s.IsActive)</span>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No suppliers found.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact Person</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @item.Name
+                                        @if (!item.IsActive)
+                                        {
+                                            <span class="badge bg-warning ms-2" title="Inactive">
+                                                <i class="fas fa-ban"></i>
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@item.ContactPerson</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Phone))
+                                    {
+                                        <a href="tel:@item.Phone" class="text-decoration-none">
+                                            <i class="fas fa-phone"></i> @item.Phone
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <a href="mailto:@item.Email" class="text-decoration-none">
+                                            <i class="fas fa-envelope"></i> @item.Email
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(item.IsActive ? "bg-success" : "bg-warning")">
+                                        @(item.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm" title="Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        @if (item.IsActive)
+                                        {
+                                            <a asp-action="Deactivate" asp-route-id="@item.Id" asp-route-returnStatus="@currentStatus"
+                                               class="btn btn-danger btn-sm" title="Deactivate">
+                                                <i class="fas fa-ban"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Reactivate" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <input type="hidden" name="returnStatus" value="@currentStatus" />
+                                                <button type="submit" class="btn btn-success btn-sm" title="Reactivate"
+                                                        onclick="return confirm('Are you sure you want to reactivate this supplier?')">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function () {
+            document.querySelectorAll('.alert').forEach(el => {
+                var alert = bootstrap.Alert.getOrCreateInstance(el);
+                alert.close();
+            });
+        }, 5000);
+    </script>
+}

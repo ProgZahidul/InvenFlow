@@ -1,0 +1,148 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - InvenFlow</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm navbar-gradient">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-warehouse me-2"></i> InvenFlow
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                        aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMenu">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                                </a>
+                            </li>
+
+                            @if (!User.IsInRole("Supplier"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Requisition" asp-action="Index">
+                                        <i class="fas fa-clipboard-list me-1"></i> Requisitions
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager") || User.IsInRole("Storekeeper"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="PurchaseOrder" asp-action="Index">
+                                        <i class="fas fa-file-invoice-dollar me-1"></i> Purchase Orders
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager") || User.IsInRole("Storekeeper"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="GRN" asp-action="Index">
+                                        <i class="fas fa-truck-loading me-1"></i> Goods Receipt
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Issue" asp-action="Index">
+                                        <i class="fas fa-share-square me-1"></i> Issues
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Stock" asp-action="Index">
+                                        <i class="fas fa-boxes me-1"></i> Stock
+                                    </a>
+                                </li>
+                            }
+
+                            @if (!User.IsInRole("Supplier"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Report" asp-action="Index">
+                                        <i class="fas fa-chart-bar me-1"></i> Reports
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
+                                        <i class="fas fa-users-cog me-1"></i> Admin
+                                    </a>
+                                    <ul class="dropdown-menu shadow-sm" aria-labelledby="adminDropdown">
+                                        @if (User.IsInRole("Administrator"))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">Manage Users</a></li>
+                                        }
+                                        <li><a class="dropdown-item" asp-controller="Suppliers" asp-action="Index">Suppliers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Items">Items</a></li>
+                                    </ul>
+                                </li>
+                            }
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> @User.Identity?.Name
+                                </a>
+                                <ul class="dropdown-menu shadow-sm dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <form class="dropdown-item p-0" asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="btn btn-link text-decoration-none w-100 text-start">
+                                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container d-flex justify-content-between align-items-center py-2">
+            <span>&copy; 2026 - ProgZahidul & Monirul</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('animate__animated', 'animate__fadeInUp');
+            });
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

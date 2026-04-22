@@ -1,0 +1,25 @@
+﻿@model InventoryManagementSystem.Models.Requisition
+
+@{
+    ViewData["Title"] = "Approve Requisition";
+}
+
+<h2>Approve Requisition</h2>
+
+<div>
+    <h4>@Model.Title</h4>
+    <p>@Model.Description</p>
+    <p>Requested By: @Model.RequestedBy?.UserName</p>
+    <p>Department: @Model.Department?.Name</p>
+</div>
+
+<form asp-action="Approve" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label>Status Notes</label>
+        <textarea name="statusNotes" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">Approve</button>
+</form>

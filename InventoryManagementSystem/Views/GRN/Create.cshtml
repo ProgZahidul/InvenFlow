@@ -1,0 +1,127 @@
+﻿@model GRNViewModel
+@{
+    ViewData["Title"] = "Create Goods Received Note";
+}
+
+<h2><i class="fas fa-truck-loading"></i> @ViewData["Title"]</h2>
+<hr />
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="alert alert-info">
+    <strong>PO Number:</strong> @Model.PONumber<br />
+    <strong>Supplier:</strong> @Model.SupplierName
+</div>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="PurchaseOrderId" />
+    <input type="hidden" asp-for="PONumber" />
+    <input type="hidden" asp-for="SupplierName" />
+
+    <div class="form-group">
+        <label asp-for="Notes" class="control-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+
+    <h4>Received Items</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Item</th>
+                    <th>Ordered Qty</th>
+                    <th>Received Qty</th>
+                    <th>Unit Price</th>
+                    <th>Batch Number</th>
+                    <th>Expiry Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Model.Items[i].ItemName
+                            <input type="hidden" asp-for="Items[i].PurchaseOrderItemId" />
+                            <input type="hidden" asp-for="Items[i].ItemId" />
+                            <input type="hidden" asp-for="Items[i].ItemName" />
+                            <input type="hidden" asp-for="Items[i].QuantityOrdered" />
+                            <input type="hidden" asp-for="Items[i].UnitPrice" />
+                        </td>
+                        <td>@Model.Items[i].QuantityOrdered</td>
+                        <td>
+                            <input asp-for="Items[i].QuantityReceived" type="number" min="0" max="@Model.Items[i].QuantityOrdered" class="form-control" />
+                            <span asp-validation-for="Items[i].QuantityReceived" class="text-danger"></span>
+                        </td>
+                        <td>@Model.Items[i].UnitPrice.ToString("C")</td>
+                        <td>
+                            <input asp-for="Items[i].BatchNumber" class="form-control" required />
+                            <span asp-validation-for="Items[i].BatchNumber" class="text-danger"></span>
+                        </td>
+                        <td>
+                            <input asp-for="Items[i].ExpiryDate" type="date" class="form-control"
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                            <span asp-validation-for="Items[i].ExpiryDate" class="text-danger"></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Create GRN
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            // Set minimum date for expiry date fields to today
+            $('input[type="date"]').each(function () {
+                if (!$(this).val()) {
+                    var today = new Date().toISOString().split('T')[0];
+                    $(this).val(today);
+                }
+            });
+
+            // Validate that at least one item has quantity received > 0
+            $('form').on('submit', function (e) {
+                var hasReceivedItems = false;
+                $('input[name$="QuantityReceived"]').each(function () {
+                    if (parseInt($(this).val()) > 0) {
+                        hasReceivedItems = true;
+                        return false; // break out of loop
+                    }
+                });
+
+                if (!hasReceivedItems) {
+                    e.preventDefault();
+                    alert('Please enter quantity received for at least one item.');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

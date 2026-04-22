@@ -1,0 +1,187 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager") || User.IsInRole("Approver"))
+    {
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Pending Requisitions</h6>
+                            <h3 class="card-text">@Model.PendingRequisitions</h3>
+                        </div>
+                        <i class="fas fa-clipboard-list fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="Requisition" asp-action="Index" class="text-white">View Details →</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager"))
+    {
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Pending POs</h6>
+                            <h3 class="card-text">@Model.PendingPurchaseOrders</h3>
+                        </div>
+                        <i class="fas fa-file-invoice-dollar fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="PurchaseOrder" asp-action="Index" class="text-white">View Details →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Low Stock Items</h6>
+                            <h3 class="card-text">@Model.LowStockItems</h3>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="Report" asp-action="StockReport" class="text-white">View Details →</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (User.IsInRole("DepartmentUser"))
+    {
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">My Pending Requisitions</h6>
+                            <h3 class="card-text">@Model.MyPendingRequisitions</h3>
+                        </div>
+                        <i class="fas fa-user-clock fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="Requisition" asp-action="Index" class="text-white">View Details →</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager") || User.IsInRole("Storekeeper"))
+    {
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Recent Receipts</h6>
+                            <h3 class="card-text">@Model.RecentReceipts</h3>
+                        </div>
+                        <i class="fas fa-truck-loading fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="GRN" asp-action="Index" class="text-white">View Details →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Recent Issues</h6>
+                            <h3 class="card-text">@Model.RecentIssues</h3>
+                        </div>
+                        <i class="fas fa-share-square fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="Issue" asp-action="Index" class="text-white">View Details →</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title"><i class="fas fa-bell"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    @if (User.IsInRole("DepartmentUser"))
+                    {
+                        <a asp-controller="Requisition" asp-action="Create" class="list-group-item list-group-item-action">
+                            <i class="fas fa-plus-circle text-primary"></i> Create New Requisition
+                        </a>
+                    }
+
+                    @if (User.IsInRole("Administrator") || User.IsInRole("Approver"))
+                    {
+                        <a asp-controller="Requisition" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-check-circle text-success"></i> Review / Approve Requisitions
+                        </a>
+                    }
+
+                    @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager"))
+                    {
+                        <a asp-controller="PurchaseOrder" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-invoice-dollar text-warning"></i> Manage Purchase Orders
+                        </a>
+                    }
+
+                    @if (User.IsInRole("Administrator") || User.IsInRole("InventoryManager") || User.IsInRole("Storekeeper"))
+                    {
+                        <a asp-controller="GRN" asp-action="Create" class="list-group-item list-group-item-action">
+                            <i class="fas fa-truck-loading text-info"></i> Record Goods Receipt
+                        </a>
+                        <a asp-controller="Issue" asp-action="Create" class="list-group-item list-group-item-action">
+                            <i class="fas fa-share-square text-secondary"></i> Issue Items
+                        </a>
+                    }
+
+
+                    <a asp-controller="Report" asp-action="Index" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar text-dark"></i> View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title"><i class="fas fa-chart-line"></i> Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Recent system activity will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+</div>

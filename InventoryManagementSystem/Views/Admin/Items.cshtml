@@ -1,0 +1,165 @@
+﻿@model IEnumerable<InventoryManagementSystem.Models.Item>
+@{
+    ViewData["Title"] = "Items Management";
+    var currentStatus = ViewBag.CurrentStatus as string ?? "active";
+}
+
+<!-- Alerts -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fas fa-box"></i> Items Management</h2>
+    <a asp-action="CreateItem" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Item
+    </a>
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Filter Items</h5>
+    </div>
+    <div class="card-body">
+        <div class="btn-group flex-wrap" role="group">
+            <a asp-action="Items" asp-route-status="active"
+               class="btn @(currentStatus == "active" ? "btn-primary" : "btn-outline-primary")">
+                <i class="fas fa-check-circle"></i> Active
+            </a>
+            <a asp-action="Items" asp-route-status="inactive"
+               class="btn @(currentStatus == "inactive" ? "btn-warning" : "btn-outline-warning")">
+                <i class="fas fa-ban"></i> Inactive
+            </a>
+            <a asp-action="Items" asp-route-status="all"
+               class="btn @(currentStatus == "all" ? "btn-info" : "btn-outline-info")">
+                <i class="fas fa-list"></i> All Items
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Items Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-boxes"></i> Items List
+            <span class="badge bg-secondary ms-2">@Model.Count()</span>
+        </h5>
+        <div>
+            <span class="badge bg-success">Active: @Model.Count(i => i.IsActive)</span>
+            <span class="badge bg-warning ms-2">Inactive: @Model.Count(i => !i.IsActive)</span>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No items found.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Category</th>
+                            <th>Unit of Measure</th>
+                            <th>Unit Price</th>
+                            <th>Reorder Level</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @item.Name
+                                        @if (!item.IsActive)
+                                        {
+                                            <span class="badge bg-warning ms-2" title="Inactive">
+                                                <i class="fas fa-ban"></i>
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@item.Code</td>
+                                <td>@item.Category?.Name</td>
+                                <td>@(item.UnitOfMeasure?.UnitName ?? "-")</td>
+                                <td>@item.UnitPrice?.ToString("C")</td>
+                                <td>@item.ReorderLevel</td>
+                                <td>
+                                    <span class="badge @(item.IsActive ? "bg-success" : "bg-danger")">
+                                        @(item.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="EditItem" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        @* Deactivate (POST) *@
+                                        @if (item.IsActive)
+                                        {
+                                            <form asp-action="DeleteItem" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to deactivate this item?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <input type="hidden" name="returnStatus" value="@currentStatus" />
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Deactivate">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ReactivateItem" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to reactivate this item?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <input type="hidden" name="returnStatus" value="@currentStatus" />
+                                                <button type="submit" class="btn btn-success btn-sm" title="Reactivate">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function () {
+            document.querySelectorAll('.alert').forEach(el => {
+                var alert = bootstrap.Alert.getOrCreateInstance(el);
+                alert.close();
+            });
+        }, 5000);
+    </script>
+}

@@ -1,0 +1,61 @@
+﻿@model IEnumerable<InventoryManagementSystem.Models.Item>
+
+@{
+    ViewData["Title"] = "Inactive Items";
+}
+
+<h2>Inactive Items</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<p>
+    <a asp-action="Items" class="btn btn-outline-primary">Back to Active Items</a>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No inactive items found.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Category</th>
+                <th>Unit Price</th>
+                <th>Reorder Level</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Code</td>
+                    <td>@item.Category?.Name</td>
+                    <td>@item.UnitPrice?.ToString("C")</td>
+                    <td>@item.ReorderLevel</td>
+                    <td>
+                        <form asp-action="ReactivateItem" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-sm btn-success"
+                                    onclick="return confirm('Are you sure you want to reactivate this item?')">
+                                Reactivate
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
